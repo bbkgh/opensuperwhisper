@@ -5,7 +5,6 @@
 #   "playsound3",
 #   "sounddevice",
 #   "scipy",
-#   "httpx",
 #   "pynput",
 #   "pyperclip"
 # ]
@@ -141,24 +140,36 @@ def stop_recording():
 
 
 def transcribe(file_address: str) -> str:
-    try:
-        key = os.getenv("OPENAI_API_KEY")
-        if not key:
-            print("Error: OPENAI_API_KEY environment variable is not set")
-            return ""
-        client = OpenAI(api_key=key)
-        with open(file_address, "rb") as audio_file:
-            transcription = client.audio.transcriptions.create(
-                model="gpt-4o-transcribe",
-                temperature=0.0,
-                file=audio_file,
-                prompt="Transcribe completely and exactly what is said. Language may be Persian or English. No summary. sentence prefrebly should be meningful. usually my sentences are about software development. ",
-                response_format="text",
-            )
-        return transcription if isinstance(transcription, str) else ""
-    except Exception as e:
-        print(f"Error during transcription: {e}")
+    key = os.getenv("OPENAI_API_KEY")
+    if not key:
+        print("Error: OPENAI_API_KEY environment variable is not set")
         return ""
+
+    client = OpenAI(api_key=key)
+    max_retries = 3
+    base_delay = 0.1
+
+    for attempt in range(max_retries):
+        try:
+            with open(file_address, "rb") as audio_file:
+                transcription = client.audio.transcriptions.create(
+                    model="gpt-4o-transcribe",
+                    temperature=0.0,
+                    file=audio_file,
+                    prompt="Transcribe completely and exactly what is said. Language may be Persian or English. No summary. sentence prefrebly should be meningful. usually my sentences are about software development. ",
+                    response_format="text",
+                )
+            return transcription if isinstance(transcription, str) else ""
+        except Exception as e:
+            if attempt == max_retries - 1:
+                print(f"Error during transcription after {max_retries} attempts: {e}")
+                return ""
+
+            delay = base_delay * (2**attempt)
+            print(
+                f"Transcription attempt {attempt + 1} failed, retrying in {delay}s: {e}"
+            )
+            time.sleep(delay)
 
 
 def toggle_recording():
