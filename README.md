@@ -10,7 +10,7 @@ A Python script that records audio from your microphone, transcribes it using Op
 - **🔊 Audio Cues**: Plays sounds to indicate the start of recording and successful transcription.
 - **✍️ Automatic Transcription**: Uses the OpenAI API for high-quality audio-to-text conversion.
 - **📋 Clipboard Integration**: Automatically copies the transcribed text to the clipboard for immediate use.
-- **⚡ Low Latency**: Designed for quick and efficient transcription.
+
 
 ## 🛠️ Prerequisites
 
